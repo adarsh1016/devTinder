@@ -1,20 +1,23 @@
 const express=require("express");
 const app = express();
 
-
-
-app.get("/",(req, res)=>{
-    res.send("Welcome to Home Page !");
+app.get("/user",(req, res)=>{
+    res.send({firstName:"Adarsh", lastName:"Jaiswal"});
 });
 
-app.get("/test",(req, res)=>{
-    res.send("Hello from test route !");
+app.post("/user",(req,res)=>{
+    //logic for saving the data to the database 
+    res.send("Data is saved to database");
 });
 
-app.get("/hello",(req, res)=>{
-    res.send("Hello hello hello !");
+app.delete("/user",(req,res)=>{
+    res.send("Data has been deleted..");
 });
 
+// This app.use will respond to all HTTP call whether it being GET, POST, DELETE... nad any routes that will matches from /test to /test/abc.....
+app.use("/test",(req, res)=>{
+    res.send("response from test route");
+});
 
 app.listen(3000,()=>{
     console.log("Server is up and listening on the port 3000..");

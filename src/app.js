@@ -1,32 +1,24 @@
 const express=require("express");
 const app = express();
 
- app.use("/user",
-    (req,res,next)=>{
-    console.log("Handling the route user 1");
-    next()
- });
-app.use("/user",
-    (req,res,next)=>{
-    console.log("Handling the route user 2");
-    next()
- });
-app.use("/user",
-    (req,res,next)=>{
-    console.log("Handling the route user 3");
-    next()
- });
-app.use("/user",
-    (req,res,next)=>{
-    console.log("Handling the route user 4");
-    next()
- });
-app.use("/user",
-    (req,res,next)=>{
-    console.log("Handling the route user 5");
-    res.send("5th response!!");
- });
+app.use("/admin", (req, res, next) => {
+    console.log("handling admin authentication");
+    const token = "xyz";
+    const isAuthenticated = token === "xyz";
+    if (!isAuthenticated) {
+        return res.status(401).send("Unauthorized");
+    }
+    next();
+});
 
-app.listen(3000,()=>{
-    console.log("Server is up and listening on the port 3000..");
+app.get("/admin/getAllData", (req, res) => {
+    res.send("Admin Data are sent");
+});
+
+app.get("/admin/deleteUser", (req, res) => {
+    res.send("User deleted successfully");
+});
+
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
 });

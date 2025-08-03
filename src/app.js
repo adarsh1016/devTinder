@@ -44,6 +44,27 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    await User.findByIdAndDelete({ _id: userId });
+    res.send("user deleted successfully");
+  } catch (err) {
+    res.status(400).send("Something went wrong..");
+  }
+});
+
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    await User.findByIdAndUpdate({ _id: userId }, data);
+    res.send("Data updated succcessfuylly");
+  } catch (err) {
+    res.status(400).send("Something went wrong..");
+  }
+});
+
 connectDB()
   .then(() => {
     console.log("Connected to the database successfully..");

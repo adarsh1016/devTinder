@@ -5,38 +5,11 @@ const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("./utils/validation");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
-
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailID;
-
-  try {
-    const users = await User.find({ emailID: userEmail });
-    if (users.length == 0) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong");
-  }
-});
-
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    if (users.length == 0) {
-      res.status(404).send("No records found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong");
-  }
-});
 
 app.post("/signup", async (req, res) => {
   try {
@@ -80,56 +53,29 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    console.log(cookies);
-    const { authToken } = cookies;
-    if (!authToken) {
-      throw new Error("No token provided");
-    }
-    const decodeMessage = await jwt.verify(authToken, "secretKey");
-    const _id = decodeMessage._id;
-    const user = await User.findById(_id);
-    if (!user) {
-      throw new Error("User not found");
-    }
+    const user = req.user; // Access the user from the request object
     res.send(user);
   } catch (err) {
     res.status(400).send("Error while fetching profile: " + err.message);
   }
 });
 
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
   try {
-    await User.findByIdAndDelete({ _id: userId });
-    res.send("user deleted successfully");
-  } catch (err) {
-    res.status(400).send("Something went wrong..");
-  }
-});
-
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-  try {
-    const allowedUpdates = ["about", "gender", "age", "skills"];
-    const isAllowed = Object.keys(data).every((key) =>
-      allowedUpdates.includes(key)
-    );
-    if (!isAllowed) {
-      throw new Error("Invalid updates provided");
+    const { userId } = req.body;
+    const user = req.user; // Access the user from the request object
+    const targetUser = await User.findById(userId);
+    if (!targetUser) {
+      throw new Error("Target user not found");
     }
-    if (req.body.skills.length > 5) {
-      throw new Error("Skills should not exceed 5 items");
-    }
-    await User.findByIdAndUpdate({ _id: userId }, data, {
-      runValidators: true,
-    });
-    res.send("Data updated succcessfuylly");
+    // Here you would typically add logic to send a connection request
+    res.send(`Connection request sent to ${targetUser.firstName}`);
   } catch (err) {
-    res.status(400).send("Something went wrong.." + err.message);
+    res
+      .status(400)
+      .send("Error while sending connection request: " + err.message);
   }
 });
 

@@ -3,9 +3,12 @@ const { connectDB } = require("./config/database");
 const { User } = require("./model/user");
 const bcrypt = require("bcrypt");
 const { validateSignUpData } = require("./utils/validation");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.get("/user", async (req, res) => {
   const userEmail = req.body.emailID;
@@ -69,9 +72,31 @@ app.post("/login", async (req, res) => {
     if (!isPasswordValid) {
       throw new Error("Invalid Credentials");
     }
-    res.send("Login successful");
+    const token = await jwt.sign({ _id: user._id }, "secretKey");
+    res.cookie("authToken", token);
+    res.send("Login successfully");
   } catch (err) {
     res.status(400).send("Error while logging in: " + err.message);
+  }
+});
+
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    console.log(cookies);
+    const { authToken } = cookies;
+    if (!authToken) {
+      throw new Error("No token provided");
+    }
+    const decodeMessage = await jwt.verify(authToken, "secretKey");
+    const _id = decodeMessage._id;
+    const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Error while fetching profile: " + err.message);
   }
 });
 

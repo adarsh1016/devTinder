@@ -54,10 +54,20 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user", async (req, res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res) => {
+  const userId = req.params?.userId;
   const data = req.body;
   try {
+    const allowedUpdates = ["about", "gender", "age", "skills"];
+    const isAllowed = Object.keys(data).every((key) =>
+      allowedUpdates.includes(key)
+    );
+    if (!isAllowed) {
+      throw new Error("Invalid updates provided");
+    }
+    if (req.body.skills.length > 5) {
+      throw new Error("Skills should not exceed 5 items");
+    }
     await User.findByIdAndUpdate({ _id: userId }, data, {
       runValidators: true,
     });

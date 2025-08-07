@@ -18,8 +18,8 @@ requestRouter.post(
         return res.status(400).send("Invalid status provided");
       }
 
-      const userExist = await User.findById(toUserId);
-      if (!userExist) {
+      const receiverExist = await User.findById(toUserId);
+      if (!receiverExist) {
         return res.status(404).send("User not found");
       }
 
@@ -54,6 +54,46 @@ requestRouter.post(
       res
         .status(400)
         .send("Error while sending connection request: " + err.message);
+    }
+  }
+);
+
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    try {
+      const loggedInUser = req.user._id;
+      const { status, requestId } = req.params;
+
+      const validStatuses = ["accepted", "rejected"];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          message: "Status is not valid",
+        });
+      }
+
+      if (loggedInUser.equals(requestId)) {
+        return res
+          .status(401)
+          .send(`Sender is not allowed to approve the request`);
+      }
+
+      const connectionRequest = await ConnectionRequest.findOne({
+        fromUserId: requestId,
+        toUserId: loggedInUser,
+        status: "interested",
+      });
+      if (!connectionRequest) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      connectionRequest.status = status;
+      await connectionRequest.save();
+
+      res.send(`Connection Request ${status}`);
+    } catch (err) {
+      res.status(400).send("Error: " + err.message);
     }
   }
 );

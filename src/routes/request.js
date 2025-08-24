@@ -28,12 +28,10 @@ requestRouter.post(
           {
             fromUserId: fromUserId,
             toUserId: toUserId,
-            status: "interested",
           },
           {
             fromUserId: toUserId,
             toUserId: fromUserId,
-            status: "interested",
           },
         ],
       });

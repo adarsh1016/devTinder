@@ -47,7 +47,7 @@ requestRouter.post(
       });
 
       await connectionRequest.save();
-      res.send(` ${req.user.firstName} ${status} ${userExist.firstName}`);
+      res.status(200).send(`request ${status}`);
     } catch (err) {
       res
         .status(400)
@@ -83,7 +83,7 @@ requestRouter.post(
         status: "interested",
       });
       if (!connectionRequest) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "user not found" });
       }
 
       connectionRequest.status = status;

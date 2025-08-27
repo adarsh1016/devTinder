@@ -4,13 +4,15 @@ const { userAuth } = require("../middlewares/auth");
 const ConnectionRequestmodel = require("../model/connectionRequest");
 const { User } = require("../model/user");
 
+const USER_SAFE_DATA = "firstName lastName photoUrl age gender about skills";
+
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
     const connectionRequest = await ConnectionRequestmodel.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    }).populate("fromUserId", ["firstName", "lastName"]);
+    }).populate("fromUserId", USER_SAFE_DATA);
     const data = connectionRequest.map((row) => row.fromUserId);
     res.status(200).send({
       message: "Data fetched successfully",
@@ -31,8 +33,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", ["firstName", "lastName"])
-      .populate("toUserId", ["firstName", "lastName"]);
+      .populate("fromUserId", USER_SAFE_DATA)
+      .populate("toUserId", USER_SAFE_DATA);
     const data = connectionRequests.map((row) => {
       if (row.fromUserId._id.equals(loggedInUser._id)) {
         return row.toUserId;
@@ -71,7 +73,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
         { _id: { $ne: loggedInUser._id } },
       ],
     })
-      .select("firstName lastName")
+      .select(USER_SAFE_DATA)
       .skip(skip)
       .limit(limit);
     res.send(users);

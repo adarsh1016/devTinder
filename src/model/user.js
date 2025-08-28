@@ -57,6 +57,8 @@ const userSchema = new mongoose.Schema(
           throw new Error("Photo URL is not valid.." + value);
         }
       },
+      default:
+        "https://www.shutterstock.com/image-vector/user-profile-icon-vector-black-600nw-2610260321.jpg",
     },
   },
   {
